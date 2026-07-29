@@ -145,6 +145,8 @@ Supports among others:
 
 ```bash
 pip install geom3py
+```
+---
 
 # 📚 Examples
 
