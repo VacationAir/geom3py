@@ -10,7 +10,7 @@
 
 </p>
 
-# geom3py
+# Geom3py
 
 **geom3py** is a library developed entirely in **Pure Python** for analytical geometry calculations in three-dimensional space. It features its own vector and linear algebra engine and provides an object-oriented API for **vectors, points, lines, planes and faces** including geometric transformations such as **scaling, rotation, translation and reflection**.
 
