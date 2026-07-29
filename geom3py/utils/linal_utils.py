@@ -1,5 +1,3 @@
-from ..geometry.vector import Vector
-
 def linsys_solve(A, b, tol=1e-10):
     """
     Solves a linear system of equations using the Gauss-Jordan method.
@@ -113,14 +111,17 @@ def linsys_solve(A, b, tol=1e-10):
     return solution
 
 def close(a, b, tol=1e-8):
-    if isinstance(a, Vector):
-        if isinstance(b, Vector):
+    # Check if it's a Vector by checking for Vector-specific attributes
+    is_vector = lambda x: hasattr(x, 'x') and hasattr(x, 'y') and hasattr(x, 'z') and hasattr(x, 'magnitude')
+    
+    if is_vector(a):
+        if is_vector(b):
             return abs((a - b).magnitude()) < tol
         
         elif isinstance(b, (int, float)):
             return abs(a.magnitude() - b) < tol
         
-    elif isinstance(b, Vector):
+    elif is_vector(b):
         if isinstance(a, (int, float)):
             return abs(a - b.magnitude()) < tol
         
