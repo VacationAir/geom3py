@@ -47,6 +47,9 @@ class Scene:
         origin = Point(0, 0, 0)
         ox, oy = self.camera.project(origin)
         
+        if ox is None or oy is None:
+            return None
+        
         for axis, (direction, length, label, color) in axes_info.items():
             end = direction * length
             x1, y1 = self.camera.project(Point(end.x, end.y, end.z))

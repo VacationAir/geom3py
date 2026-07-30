@@ -271,11 +271,19 @@ class Cube:
 
     def reflect_on_plane(self, E):
         return Cube(self.p_min.reflect_on_plane(E), self.p_max.reflect_on_plane(E))
-
+    
     # ======================================================================
     # Visualization
     # ======================================================================
 
     def draw_on_canvas(self, canvas, camera, **kwargs):
-        for F in self.faces:
-            F.draw_on_canvas(canvas, camera, **kwargs)
+        faces_with_depth = []
+
+        for face in self.faces:
+            depth = face.get_depth(camera)
+            faces_with_depth.append((depth, face))
+
+        faces_with_depth.sort(key=lambda x: x[0], reverse=True)
+        
+        for _, face in faces_with_depth:
+            face.draw_on_canvas(canvas, camera, **kwargs)

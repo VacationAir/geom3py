@@ -841,6 +841,14 @@ class Face:
                 tags = ("face", )
             )
 
+    def get_depth(self, camera):
+        """
+        Calculates the depth of the face with respect tot he camera.
+        """
+        center = self.center 
+        projected = camera.remapping(center)
+        return projected.z
+    
     def __repr__(self):
         """
         Returns a readable string representation of the face.
