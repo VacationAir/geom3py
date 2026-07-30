@@ -2,7 +2,7 @@ from geom3py.geometry import Vector
 from geom3py.geometry import Line
 from geom3py.geometry import Point
 from geom3py.geometry import Plane
-from geom3py.geometry import Cube
+from geom3py.geometry import Box
 from geom3py.utils.linal_utils import close
 
 class TestCubeTransformations:
@@ -13,7 +13,7 @@ class TestCubeTransformations:
 
     def setup_method(self):
         """Creates a cube with edge length 2"""
-        self.w = Cube(
+        self.w = Box(
             [0, 0, 0],
             [2, 2, 2]
         )

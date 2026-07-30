@@ -2,7 +2,7 @@ from .geometry.plane import Plane
 from .geometry.line import Line
 from .geometry.point import Point
 from .geometry.face import Face
-from .geometry.cube import Cube
+from .geometry.box import Box
 from .geometry.vector import Vector
 
 __all__ = [
@@ -10,7 +10,7 @@ __all__ = [
     "Line",
     "Plane",
     "Face",
-    "Cube",
+    "Box",
     "Vector",
 ]
 

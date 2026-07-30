@@ -3,91 +3,258 @@ from .point import Point
 from .line import Line
 from .plane import Plane
 from .face import Face
+from .vector import Vector
+from ..utils.linal_utils import close
 
-class Cube:
-
+class Box:
+    """
+    Represents a rectangular box (parallelepiped) in 3D space.
+    
+    A box is defined by two opposite corner points P_min and P_max.
+    Unlike a cube, the dimensions can be different in X, Y, and Z.
+    
+    This can represent:
+    - A perfect cube (all dimensions equal)
+    - A rectangular prism (different dimensions)
+    - A building footprint extruded to a given height
+    
+    Parameters
+    ----------
+    P_min : array_like
+        The minimum corner point (x0, y0, z0).
+    P_max : array_like
+        The maximum corner point (x1, y1, z1).
+    
+    Attributes
+    ----------
+    p_min : Point
+        The minimum corner point.
+    p_max : Point
+        The maximum corner point.
+    width : float
+        The width (X dimension).
+    depth : float
+        The depth (Y dimension).
+    height : float
+        The height (Z dimension).
+    vertices : tuple of Point
+        The 8 vertices of the box.
+    faces : list of Face
+        The 6 faces of the box.
+    bottom, top, front, back, left, right : Face
+        Individual faces for easy access.
+    """
+    
     # ======================================================================
     # Constructors
     # ======================================================================
 
     def __init__(self, P_min, P_max):
+        """
+        Initializes a new box from two opposite corner points.
+
+        Parameters
+        ----------
+        P_min : array_like
+            The minimum corner point (x0, y0, z0).
+        P_max : array_like
+            The maximum corner point (x1, y1, z1).
+        """
         self.p_min = Point(P_min)
         self.p_max = Point(P_max)
-        self.a = (self.p_max - self.p_min).magnitude() / math.sqrt(3)
+        
+        self.width = self.p_max.x - self.p_min.x
+        self.depth = self.p_max.y - self.p_min.y
+        self.height = self.p_max.z - self.p_min.z
 
         x0, y0, z0 = self.p_min.x, self.p_min.y, self.p_min.z
         x1, y1, z1 = self.p_max.x, self.p_max.y, self.p_max.z
 
-        v1 = Point(x0, y0, z0)
-        v2 = Point(x1, y0, z0)
-        v3 = Point(x1, y1, z0)
-        v4 = Point(x0, y1, z0)
+        # Los 8 vértices
+        v1 = Point(x0, y0, z0)  # 0: min, min, min
+        v2 = Point(x1, y0, z0)  # 1: max, min, min
+        v3 = Point(x1, y1, z0)  # 2: max, max, min
+        v4 = Point(x0, y1, z0)  # 3: min, max, min
         
-        v5 = Point(x0, y0, z1)
-        v6 = Point(x1, y0, z1)
-        v7 = Point(x1, y1, z1)
-        v8 = Point(x0, y1, z1)
+        v5 = Point(x0, y0, z1)  # 4: min, min, max
+        v6 = Point(x1, y0, z1)  # 5: max, min, max
+        v7 = Point(x1, y1, z1)  # 6: max, max, max
+        v8 = Point(x0, y1, z1)  # 7: min, max, max
 
         self.vertices = (v1, v2, v3, v4, v5, v6, v7, v8)
 
         self.bottom = Face(v1, v2, v3, v4)
-        self.top    = Face(v5, v6, v7, v8)
-        self.front  = Face(v1, v2, v6, v5)
-        self.back   = Face(v4, v3, v7, v8)
-        self.left   = Face(v1, v4, v8, v5)
-        self.right  = Face(v2, v3, v7, v6)
+        
+        self.top = Face(v5, v6, v7, v8)
+        
+        self.front = Face(v1, v2, v6, v5)
+        
+        self.back = Face(v4, v3, v7, v8)
+        
+        self.left = Face(v1, v4, v8, v5)
+        
+        self.right = Face(v2, v3, v7, v6)
 
         self.faces = [self.bottom, self.top, self.front, self.back, self.left, self.right]
-
+    
+    @classmethod
+    def from_footprint(cls, footprint, height):
+        """
+        Creates a box by extruding a 2D footprint to a given height.
+        
+        Parameters
+        ----------
+        footprint : Face
+            A 2D Face representing the footprint (must be coplanar in XY plane).
+        height : float
+            The height to extrude in Z direction.
+            
+        Returns
+        -------
+        Box
+            A box representing the extruded footprint.
+        """
+        xs = [v.x for v in footprint.edges]
+        ys = [v.y for v in footprint.edges]
+        
+        return cls(
+            Point(min(xs), min(ys), 0),
+            Point(max(xs), max(ys), height)
+        )
+    
     # ======================================================================
     # Basic Operations
     # ======================================================================
 
     def surface_area(self):
-        A = 0
+        """
+        Calculates the total surface area of the box.
 
-        for F in self.faces:
-            A += F.area()
-
-        return A
+        Returns
+        -------
+        float
+            The total surface area.
+        """
+        return 2 * (self.width * self.depth + self.width * self.height + self.depth * self.height)
     
     def volume(self):
-        M = self.front.area()
-        h = self.a
+        """
+        Calculates the volume of the box.
 
-        return M * h
+        Returns
+        -------
+        float
+            The volume of the box.
+        """
+        return self.width * self.depth * self.height
+    
+    def diagonal(self):
+        """
+        Calculates the space diagonal of the box.
+
+        Returns
+        -------
+        float
+            The length of the space diagonal.
+        """
+        return math.sqrt(self.width**2 + self.depth**2 + self.height**2)
     
     def circumsphere_radius(self):
-        return self.a / 2
+        """
+        Calculates the radius of the circumsphere (sphere that contains the box).
+
+        Returns
+        -------
+        float
+            The circumsphere radius.
+        """
+        return self.diagonal() / 2
     
     def contains_point(self, Q):
+        """
+        Checks if a given point is inside the box.
+
+        Parameters
+        ----------
+        Q : array_like
+            The point to check.
+
+        Returns
+        -------
+        bool
+            True if the point is inside the box, otherwise False.
+        """
         q = Point(Q)
         return (self.p_min.x <= q.x <= self.p_max.x and 
                 self.p_min.y <= q.y <= self.p_max.y and 
                 self.p_min.z <= q.z <= self.p_max.z)
     
     def face_contains_point(self, Q):
+        """
+        Checks if a given point lies on any face of the box.
+
+        Parameters
+        ----------
+        Q : array_like
+            The point to check.
+
+        Returns
+        -------
+        bool
+            True if the point lies on any face, otherwise False.
+        """
         for F in self.faces:
             if F.contains_point(Q):
                 return True
-            
         return False
 
     def center(self):
+        """
+        Calculates the center point of the box.
+
+        Returns
+        -------
+        Point
+            The center point.
+        """
         return Point((self.p_max - self.p_min) * 0.5)
     
     def point_on_edge(self, Q):
+        """
+        Checks if a given point lies on any edge of the box.
+
+        Parameters
+        ----------
+        Q : array_like
+            The point to check.
+
+        Returns
+        -------
+        bool
+            True if the point lies on any edge, otherwise False.
+        """
         for F in self.faces:
             if F.point_on_edge(Q):
                 return True
-            
         return False
 
     def point_on_corner(self, Q):
+        """
+        Checks if a given point matches any corner of the box.
+
+        Parameters
+        ----------
+        Q : array_like
+            The point to check.
+
+        Returns
+        -------
+        bool
+            True if the point matches a corner, otherwise False.
+        """
         for F in self.faces:
             if F.point_on_corner(Q):
                 return True
-            
         return False
 
     # ======================================================================
@@ -126,7 +293,7 @@ class Cube:
         else:
             return face.position_face(F2)
         
-    def position_cube(self, W2: "Cube"):
+    def position_box(self, W2: "Box"):
         """
         on_edge
         on_face
@@ -255,22 +422,22 @@ class Cube:
     # ======================================================================
 
     def scale(self, factor):
-        return Cube(self.p_min.scale(factor), self.p_max.scale(factor))
+        return Box(self.p_min.scale(factor), self.p_max.scale(factor))
 
     def rotate(self, angle, axis):
-        return Cube(self.p_min.rotate(angle, axis), self.p_max.rotate(angle, axis))
+        return Box(self.p_min.rotate(angle, axis), self.p_max.rotate(angle, axis))
 
     def translate(self, v):
-        return Cube(self.p_min.translate(v), self.p_max.translate(v))
+        return Box(self.p_min.translate(v), self.p_max.translate(v))
 
     def reflect_on_point(self, P):
-        return Cube(self.p_min.reflect_on_point(P), self.p_max.reflect_on_point(P))
+        return Box(self.p_min.reflect_on_point(P), self.p_max.reflect_on_point(P))
 
     def reflect_on_line(self, g):
-        return Cube(self.p_min.reflect_on_line(g), self.p_max.reflect_on_line(g))
+        return Box(self.p_min.reflect_on_line(g), self.p_max.reflect_on_line(g))
 
     def reflect_on_plane(self, E):
-        return Cube(self.p_min.reflect_on_plane(E), self.p_max.reflect_on_plane(E))
+        return Box(self.p_min.reflect_on_plane(E), self.p_max.reflect_on_plane(E))
     
     # ======================================================================
     # Visualization
@@ -287,3 +454,8 @@ class Cube:
         
         for _, face in faces_with_depth:
             face.draw_on_canvas(canvas, camera, **kwargs)
+
+    def get_depth(self, camera):
+        total = sum(face.get_depth(camera) for face in self.faces)
+
+        return total / len(self.faces)
