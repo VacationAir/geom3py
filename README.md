@@ -187,12 +187,12 @@ print(E.intercept_points())
 ```python
 from geom3py import Line
 
-g = Line([1, 2, 3], [1, 0, 0])
+g = Line(Point(1, 2, 3), Point(1, 0, 0))
 
 g2 = g.scale(2)
-g3 = g.translate([5, 0, 0])
+g3 = g.translate(Point(5, 0, 0))
 g4 = g.rotate(90, "z")
-g5 = g.reflect_on_point([0, 0, 0])
+g5 = g.reflect_on_point(Point(0, 0, 0))
 ```
 
 ---
