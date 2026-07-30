@@ -435,21 +435,138 @@ class Plane:
     # ======================================================================
 
     def scale(self, factor):
+        """
+        Scales the plane by a factor relative to the origin.
+
+        Parameters
+        ----------
+        factor : float
+            The scaling factor
+
+        Returns
+        -------
+        Plane
+            A new scaled plane
+
+        Examples
+        --------
+        >>> E = Plane([0, 0, 0], [1, 1, 1])
+        >>> E_scaled = E.scale(2)
+        """
         return Plane(self.point.scale(factor), self.normal_vector.scale(factor))
 
     def rotate(self, angle, axis):
+        """
+        Rotates the plane around a specified axis.
+
+        Parameters
+        ----------
+        angle : float
+            The rotation angle in degrees
+        axis : str
+            The rotation axis ('x', 'y', or 'z')
+
+        Returns
+        -------
+        Plane
+            A new rotated plane
+
+        Examples
+        --------
+        >>> E = Plane([0, 0, 0], [0, 0, 1])
+        >>> E_rotated = E.rotate(45, 'x')
+        """
         return Plane(self.point.rotate(angle, axis), self.normal_vector.rotate(angle, axis))
 
     def translate(self, v):
+        """
+        Translates the plane by a vector.
+
+        Parameters
+        ----------
+        v : array_like
+            The translation vector
+
+        Returns
+        -------
+        Plane
+            A new translated plane
+
+        Notes
+        -----
+        Translating a plane only moves its reference point.
+        The normal vector remains unchanged.
+
+        Examples
+        --------
+        >>> E = Plane([0, 0, 0], [0, 0, 1])
+        >>> E_translated = E.translate([5, 0, 0])
+        """
         return Plane(self.point.translate(v), self.normal_vector)
 
     def reflect_on_point(self, P):
+        """
+        Reflects the plane about a point.
+
+        Parameters
+        ----------
+        P : array_like
+            The point of reflection
+
+        Returns
+        -------
+        Plane
+            A new reflected plane
+
+        Examples
+        --------
+        >>> E = Plane([1, 2, 3], [0, 0, 1])
+        >>> E_reflected = E.reflect_on_point([0, 0, 0])
+        """
         return Plane(self.point.reflect_on_point(P), self.normal_vector.reflect_on_point(P))
 
     def reflect_on_line(self, g):
+        """
+        Reflects the plane about a line.
+
+        Parameters
+        ----------
+        g : Line
+            The line of reflection
+
+        Returns
+        -------
+        Plane
+            A new reflected plane
+
+        Examples
+        --------
+        >>> axis = Line([0, 0, 0], [1, 0, 0])
+        >>> E = Plane([0, 1, 0], [0, 1, 0])
+        >>> E_reflected = E.reflect_on_line(axis)
+        """
         return Plane(self.point.reflect_on_line(g), self.normal_vector.reflect_on_line(g))
 
     def reflect_on_plane(self, E):
+        """
+        Reflects the plane about another plane.
+
+        Parameters
+        ----------
+        E : Plane
+            The plane of reflection
+
+        Returns
+        -------
+        Plane
+            A new reflected plane
+
+        Examples
+        --------
+        >>> mirror = Plane([0, 0, 0], [0, 0, 1])
+        >>> E = Plane([1, 2, 3], [0, 1, 1])
+        >>> E_reflected = E.reflect_on_plane(mirror)
+        """
         return Plane(self.point.reflect_on_plane(E), self.normal_vector.reflect_on_plane(E))
 
 

@@ -773,6 +773,19 @@ class Face:
     # ======================================================================
 
     def scale(self, factor):
+        """
+        Scales the face by a factor relative to the origin.
+
+        Parameters
+        ----------
+        factor : float
+            The scaling factor
+
+        Returns
+        -------
+        Face
+            A new scaled face
+        """
         return Face(
             self.X1.scale(factor),
             self.X2.scale(factor),
@@ -781,6 +794,21 @@ class Face:
         )
 
     def rotate(self, angle, axis):
+        """
+        Rotates the face around a specified axis.
+
+        Parameters
+        ----------
+        angle : float
+            The rotation angle in degrees
+        axis : str
+            The rotation axis ('x', 'y', or 'z')
+
+        Returns
+        -------
+        Face
+            A new rotated face
+        """
         return Face(
             self.X1.rotate(angle, axis),
             self.X2.rotate(angle, axis),
@@ -789,35 +817,87 @@ class Face:
         )
 
     def translate(self, v):
+        """
+        Translates the face by a vector.
+
+        Parameters
+        ----------
+        v : array_like
+            The translation vector
+
+        Returns
+        -------
+        Face
+            A new translated face
+        """
         return Face(
             self.X1.translate(v),
             self.X2.translate(v),
             self.X3.translate(v),
-            self.X4.translate(v)        
+            self.X4.translate(v)
         )
 
     def reflect_on_point(self, P):
+        """
+        Reflects the face about a point.
+
+        Parameters
+        ----------
+        P : array_like
+            The point of reflection
+
+        Returns
+        -------
+        Face
+            A new reflected face
+        """
         return Face(
             self.X1.reflect_on_point(P),
             self.X2.reflect_on_point(P),
             self.X3.reflect_on_point(P),
-            self.X4.reflect_on_point(P)            
+            self.X4.reflect_on_point(P)
         )
 
     def reflect_on_line(self, g):
+        """
+        Reflects the face about a line.
+
+        Parameters
+        ----------
+        g : Line
+            The line of reflection
+
+        Returns
+        -------
+        Face
+            A new reflected face
+        """
         return Face(
             self.X1.reflect_on_line(g),
             self.X2.reflect_on_line(g),
             self.X3.reflect_on_line(g),
-            self.X4.reflect_on_line(g)            
+            self.X4.reflect_on_line(g)
         )
 
     def reflect_on_plane(self, E):
+        """
+        Reflects the face about a plane.
+
+        Parameters
+        ----------
+        E : Plane
+            The plane of reflection
+
+        Returns
+        -------
+        Face
+            A new reflected face
+        """
         return Face(
             self.X1.reflect_on_plane(E),
             self.X2.reflect_on_plane(E),
             self.X3.reflect_on_plane(E),
-            self.X4.reflect_on_plane(E)            
+            self.X4.reflect_on_plane(E)
         )
 
     # ======================================================================
@@ -825,27 +905,73 @@ class Face:
     # ======================================================================
 
     def draw_on_canvas(self, canvas, camera, **kwargs):
-            points_2d = []
-            for p in self.points:
-                points_2d.extend(camera.project(p))
+        """
+        Draws the face on a Tkinter canvas.
 
-            fill_color = kwargs.get("fill", "#A1FFFF")
-            outline_color = kwargs.get("outline", "#52FFFF")
-            width = kwargs.get("width", 2)
+        Parameters
+        ----------
+        canvas : tk.Canvas
+            The canvas to draw on
+        camera : Camera
+            The camera for 3D to 2D projection
+        **kwargs : dict
+            Styling options:
+            - fill : str
+                Fill color of the face (default: '#A1FFFF')
+            - outline : str
+                Outline color of the face (default: '#52FFFF')
+            - width : int
+                Width of the outline in pixels (default: 2)
 
-            canvas.create_polygon(
-                points_2d,
-                fill=fill_color,
-                outline = outline_color,
-                width=width,
-                tags = ("face", )
-            )
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        If any vertex is behind the camera (projection returns None),
+        the face is not drawn.
+        """
+        points_2d = []
+        for p in self.points:
+            x, y = camera.project(p)
+            if x is None or y is None:
+                return
+            points_2d.extend([x, y])
+
+        fill_color = kwargs.get("fill", "#A1FFFF")
+        outline_color = kwargs.get("outline", "#52FFFF")
+        width = kwargs.get("width", 2)
+
+        canvas.create_polygon(
+            points_2d,
+            fill=fill_color,
+            outline=outline_color,
+            width=width,
+            tags=("face",)
+        )
 
     def get_depth(self, camera):
         """
-        Calculates the depth of the face with respect tot he camera.
+        Calculates the depth of the face with respect to the camera.
+
+        Parameters
+        ----------
+        camera : Camera
+            The camera for depth calculation
+
+        Returns
+        -------
+        float
+            The depth (Z-coordinate) of the face's center in camera space
+
+        Notes
+        -----
+        This is used for z-ordering when rendering multiple objects.
+        Objects with larger depth values are drawn first (farther away).
+        Uses the face's center point for consistent depth calculation.
         """
-        center = self.center 
+        center = self.center
         projected = camera.remapping(center)
         return projected.z
     

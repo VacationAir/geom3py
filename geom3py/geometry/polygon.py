@@ -2,6 +2,7 @@ from .point import Point
 from .vector import Vector
 from .line import Line
 from .plane import Plane
+from ..utils.linal_utils import close
 
 class Polygon:
     """
@@ -40,18 +41,26 @@ class Polygon:
         Whether vertices are clockwise if coplanar, None otherwise.
     """
     
-    def __init__(self, n_vertex):
-                
+    def __init__(self, vertices):
+        """
+        Initializes a new polygon from a list of vertices.
+
+        Parameters
+        ----------
+        vertices : list of array_like
+            List of vertices in order (at least 3).
+
+        Raises
+        ------
+        ValueError
+            If fewer than 3 vertices are provided.
+        """
         self.vertices = []
-        for vertex in n_vertex:
+        for vertex in vertices:
             if not isinstance(vertex, Point):
                 self.vertices.append(Point(vertex))
-
             else:
                 self.vertices.append(vertex)
-
-        if len(self.vertices) < 3:
-            raise ValueError("Polygon must have at least 3 vertices")
 
         # Basic properties
         self.n = len(self.vertices)
@@ -68,7 +77,7 @@ class Polygon:
             self.is_convex = self._compute_convexity()
             self.is_clockwise = self._compute_orientation()
         else:
-            self.normal = None
+            self.normal_vector = None
             self.area = None
             self.is_convex = None
             self.is_clockwise = None
@@ -78,63 +87,138 @@ class Polygon:
     # ======================================================================
 
     def _compute_edges(self):
+        """
+        Computes all edges of the polygon.
+
+        Returns
+        -------
+        tuple of Line
+            A tuple of Line objects connecting consecutive vertices.
+        """
         edges = []
-
         for i in range(self.n):
-            g = Line.from_points(self.vertices[i], self.vertices[(i+1) % self.n])
+            g = Line.from_points(self.vertices[i], self.vertices[(i + 1) % self.n])
             edges.append(g)
-
         return tuple(edges)
 
     def _compute_centroid(self):
+        """
+        Computes the centroid (average) of all vertices.
+
+        Returns
+        -------
+        Point
+            The centroid point.
+        """
         x = sum(v.x for v in self.vertices) / self.n
         y = sum(v.y for v in self.vertices) / self.n
         z = sum(v.z for v in self.vertices) / self.n
-
         return Point(x, y, z)
 
     def _compute_perimeter(self):
-        perimeter = 0
+        """
+        Computes the perimeter of the polygon.
+
+        Returns
+        -------
+        float
+            The sum of all edge lengths.
+        """
+        perimeter = 0.0
         for e in self.edges:
             perimeter += e.direction_vector.magnitude()
-
         return perimeter
 
     def _compute_bounding_box(self):
+        """
+        Computes the axis-aligned bounding box.
+
+        Returns
+        -------
+        dict
+            A dictionary with 'min' and 'max' points.
+        """
         vx = [v.x for v in self.vertices]
         vy = [v.y for v in self.vertices]
         vz = [v.z for v in self.vertices]
-
-        return{
+        return {
             "min": Point(min(vx), min(vy), min(vz)),
             "max": Point(max(vx), max(vy), max(vz))
         }
 
     def _check_coplanarity(self):
-        E = Plane.from_parametric((self.edges[0]).support_vector, (self.edges[0]).direction_vector, (self.edges[1]).direction_vector)
+        """
+        Checks if all vertices are coplanar.
 
-        for e in self.edges:
-            if E.position_line(e) != "identical":
+        Returns
+        -------
+        bool
+            True if all vertices lie in the same plane, False otherwise.
+        """
+        if self.n < 4:
+            return True
+        
+        v0 = self.vertices[0]
+        v1 = self.vertices[1]
+        v2 = self.vertices[2]
+        
+        normal = (v1 - v0).cross(v2 - v0)
+        if close(normal.magnitude(), 0):
+            return False
+        
+        E = Plane(v0, normal)
+        
+        for i in range(3, self.n):
+            if not E.contains_point(self.vertices[i]):
                 return False
-
+        
         return True
 
     def _compute_normal(self):
-        norm_vector = (self.edges[0]).direction_vector.cross((self.edges[1]).direction_vector)
+        """
+        Computes the normal vector of the polygon.
 
-        return norm_vector
+        Returns
+        -------
+        Vector
+            The normalized normal vector.
+        """
+        v0 = self.vertices[0]
+        v1 = self.vertices[1]
+        v2 = self.vertices[2]
+        
+        normal = (v1 - v0).cross(v2 - v0)
+        return normal.normalize()
     
     def _compute_area(self):
+        """
+        Computes the area of the polygon.
+
+        Returns
+        -------
+        float
+            The area of the polygon.
+
+        Notes
+        -----
+        Uses the 3D polygon area formula: area = 0.5 * |sum(v_i x v_{i+1})|
+        """
         area_vector = Vector(0, 0, 0)
-        
         for i in range(self.n):
             v1 = self.vertices[i]
             v2 = self.vertices[(i + 1) % self.n]
             area_vector += v1.cross(v2)
-        
         return abs(area_vector.magnitude()) / 2
 
     def _compute_convexity(self):
+        """
+        Checks if the polygon is convex.
+
+        Returns
+        -------
+        bool
+            True if the polygon is convex, False otherwise.
+        """
         if self.n < 4:
             return True
         
@@ -153,12 +237,19 @@ class Polygon:
         return not (has_positive and has_negative)
 
     def _compute_orientation(self):
+        """
+        Determines if vertices are ordered clockwise or counterclockwise.
+
+        Returns
+        -------
+        bool
+            True if vertices are ordered clockwise, False otherwise.
+        """
         signed_area = 0.0
         for i in range(self.n):
             v1 = self.vertices[i]
             v2 = self.vertices[(i + 1) % self.n]
             signed_area += v1.x * v2.y - v2.x * v1.y
-        
         return signed_area < 0
 
     # ======================================================================
@@ -176,14 +267,28 @@ class Polygon:
         camera : Camera
             The camera for 3D to 2D projection.
         **kwargs : dict
-            Styling options: fill, outline, width.
+            Styling options:
+            - fill : str
+                Fill color of the polygon (default: '#96FF9B')
+            - outline : str
+                Outline color of the polygon (default: 'green')
+            - width : int
+                Width of the outline in pixels (default: 2)
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        If any vertex is behind the camera (projection returns None),
+        the polygon is not drawn.
         """
         points_2d = []
         for p in self.vertices:
             x, y = camera.project(p)
             if x is None or y is None:
                 return
-            
             points_2d.extend([x, y])
         
         fill_color = kwargs.get('fill', '#96FF9B')
@@ -201,7 +306,38 @@ class Polygon:
     def get_depth(self, camera):
         """
         Calculates the depth of the polygon with respect to the camera.
-        Uses the average depth of all edges for better accuracy.
+
+        Parameters
+        ----------
+        camera : Camera
+            The camera for depth calculation.
+
+        Returns
+        -------
+        float
+            The depth (Z-coordinate) of the polygon's centroid in camera space.
+
+        Notes
+        -----
+        This is used for z-ordering when rendering multiple objects.
+        Objects with larger depth values are drawn first (farther away).
         """
         projected = camera.remapping(self.centroid)
         return projected.z
+
+    # ======================================================================
+    # Representation
+    # ======================================================================
+
+    def __repr__(self):
+        """
+        Returns a readable string representation of the polygon.
+
+        Returns
+        -------
+        str
+            A string representation of the polygon.
+        """
+        status = "coplanar" if self.is_coplanar else "non-coplanar"
+        area_str = f", area={self.area:.2f}" if self.is_coplanar and self.area is not None else ""
+        return f"Polygon({self.n} vertices, {status}{area_str})"

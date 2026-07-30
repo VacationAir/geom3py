@@ -364,21 +364,138 @@ class Line:
     # ======================================================================
 
     def scale(self, factor):
+        """
+        Scales the line by a factor relative to the origin.
+
+        Parameters
+        ----------
+        factor : float
+            The scaling factor
+
+        Returns
+        -------
+        Line
+            A new scaled line
+
+        Examples
+        --------
+        >>> g = Line([0, 0, 0], [1, 0, 0])
+        >>> g_scaled = g.scale(2)
+        """
         return Line(self.support_vector.scale(factor), self.direction_vector.scale(factor))
 
     def rotate(self, angle, axis):
+        """
+        Rotates the line around a specified axis.
+
+        Parameters
+        ----------
+        angle : float
+            The rotation angle in degrees
+        axis : str
+            The rotation axis ('x', 'y', or 'z')
+
+        Returns
+        -------
+        Line
+            A new rotated line
+
+        Examples
+        --------
+        >>> g = Line([0, 0, 0], [1, 0, 0])
+        >>> g_rotated = g.rotate(90, 'z')
+        """
         return Line(self.support_vector.rotate(angle, axis), self.direction_vector.rotate(angle, axis))
 
     def translate(self, v):
+        """
+        Translates the line by a vector.
+
+        Parameters
+        ----------
+        v : array_like
+            The translation vector
+
+        Returns
+        -------
+        Line
+            A new translated line
+
+        Notes
+        -----
+        Translating a line only moves its support vector.
+        The direction vector remains unchanged.
+
+        Examples
+        --------
+        >>> g = Line([0, 0, 0], [1, 0, 0])
+        >>> g_translated = g.translate([5, 0, 0])
+        """
         return Line(self.support_vector.translate(v), self.direction_vector)
 
     def reflect_on_point(self, P):
+        """
+        Reflects the line about a point.
+
+        Parameters
+        ----------
+        P : array_like
+            The point of reflection
+
+        Returns
+        -------
+        Line
+            A new reflected line
+
+        Examples
+        --------
+        >>> g = Line([1, 2, 3], [1, 0, 0])
+        >>> g_reflected = g.reflect_on_point([0, 0, 0])
+        """
         return Line(self.support_vector.reflect_on_point(P), self.direction_vector.reflect_on_point(P))
 
     def reflect_on_line(self, g):
+        """
+        Reflects the line about another line.
+
+        Parameters
+        ----------
+        g : Line
+            The line of reflection
+
+        Returns
+        -------
+        Line
+            A new reflected line
+
+        Examples
+        --------
+        >>> axis = Line([0, 0, 0], [1, 0, 0])
+        >>> g = Line([0, 1, 0], [1, 0, 0])
+        >>> g_reflected = g.reflect_on_line(axis)
+        """
         return Line(self.support_vector.reflect_on_line(g), self.direction_vector.reflect_on_line(g))
 
     def reflect_on_plane(self, E):
+        """
+        Reflects the line about a plane.
+
+        Parameters
+        ----------
+        E : Plane
+            The plane of reflection
+
+        Returns
+        -------
+        Line
+            A new reflected line
+
+        Examples
+        --------
+        >>> mirror = Plane([0, 0, 0], [0, 0, 1])
+        >>> g = Line([1, 2, 3], [1, 0, 0])
+        >>> g_reflected = g.reflect_on_plane(mirror)
+        """
         return Line(self.support_vector.reflect_on_plane(E), self.direction_vector.reflect_on_plane(E))
 
     # ======================================================================
@@ -386,23 +503,71 @@ class Line:
     # ======================================================================
 
     def draw_on_canvas(self, canvas, camera, **kwargs):
-            p1 = self.support_vector
-            p2 = self.point_at(1)
+        """
+        Draws the line on a Tkinter canvas.
 
-            x1, y1 = camera.project(p1)
-            x2, y2 = camera.project(p2)
+        Parameters
+        ----------
+        canvas : tk.Canvas
+            The canvas to draw on
+        camera : Camera
+            The camera for 3D to 2D projection
+        **kwargs : dict
+            Styling options:
+            - color : str
+                Color of the line (default: 'blue')
+            - width : int
+                Width of the line in pixels (default: 2)
 
-            color = kwargs.get("color", "blue")
-            width = kwargs.get("width", 2)
+        Returns
+        -------
+        None
 
-            canvas.create_line(
-                x1, y1, x2, y2,
-                fill=color,
-                width=width,
-                tags = ("line", )
-            )
+        Notes
+        -----
+        If either endpoint is behind the camera (projection returns None),
+        the line is not drawn.
+        """
+        p1 = self.support_vector
+        p2 = self.point_at(1)
+
+        x1, y1 = camera.project(p1)
+        x2, y2 = camera.project(p2)
+
+        # If either point is behind camera, don't draw
+        if x1 is None or y1 is None or x2 is None or y2 is None:
+            return
+
+        color = kwargs.get("color", "blue")
+        width = kwargs.get("width", 2)
+
+        canvas.create_line(
+            x1, y1, x2, y2,
+            fill=color,
+            width=width,
+            tags=("line",)
+        )
 
     def get_depth(self, camera):
+        """
+        Calculates the depth of the line with respect to the camera.
+
+        Parameters
+        ----------
+        camera : Camera
+            The camera for depth calculation
+
+        Returns
+        -------
+        float
+            The average depth (Z-coordinate) of the line's endpoints in camera space
+
+        Notes
+        -----
+        This is used for z-ordering when rendering multiple objects.
+        Objects with larger depth values are drawn first (farther away).
+        Uses the average depth of both endpoints for better accuracy.
+        """
         p1 = camera.remapping(self.support_vector)
         p2 = camera.remapping(self.point_at(1))
 

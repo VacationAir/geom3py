@@ -65,19 +65,76 @@ class Point(Vector):
     # ======================================================================
 
     def draw_on_canvas(self, canvas, camera, **kwargs):
-            x, y = camera.project(self)
-            radius = kwargs.get("radius", 4)
-            color = kwargs.get("color", "red")
+        """
+        Draws the point on a Tkinter canvas.
 
-            canvas.create_oval(
-                x- radius, y - radius,
-                x + radius, y + radius,
-                fill=color,
-                outline=color,
-                tags = ("point", )
-            )
+        Parameters
+        ----------
+        canvas : tk.Canvas
+            The canvas to draw on
+        camera : Camera
+            The camera for 3D to 2D projection
+        **kwargs : dict
+            Styling options:
+            - radius : int
+                Radius of the point in pixels (default: 4)
+            - color : str
+                Color of the point (default: 'red')
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        If the point is behind the camera (projection returns None),
+        nothing is drawn.
+
+        Examples
+        --------
+        >>> point = Point(1, 2, 3)
+        >>> scene.add(point, color='blue', radius=6)
+        """
+        x, y = camera.project(self)
+        
+        # If point is behind camera, don't draw
+        if x is None or y is None:
+            return
+        
+        radius = kwargs.get("radius", 4)
+        color = kwargs.get("color", "red")
+
+        canvas.create_oval(
+            x - radius, y - radius,
+            x + radius, y + radius,
+            fill=color,
+            outline=color,
+            tags=("point",)
+        )
 
     def get_depth(self, camera):
-        projected = camera.remapping(self)
+        """
+        Calculates the depth of the point with respect to the camera.
 
+        Parameters
+        ----------
+        camera : Camera
+            The camera for depth calculation
+
+        Returns
+        -------
+        float
+            The depth (Z-coordinate) of the point in camera space
+
+        Notes
+        -----
+        This is used for z-ordering when rendering multiple objects.
+        Objects with larger depth values are drawn first (farther away).
+
+        Examples
+        --------
+        >>> p = Point(1, 2, 3)
+        >>> depth = p.get_depth(camera)
+        """
+        projected = camera.remapping(self)
         return projected.z

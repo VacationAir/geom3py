@@ -262,50 +262,90 @@ class Box:
     # ======================================================================    
     
     def position_line(self, G: Line, face: Face = None):
+        """
+        Determines the positional relationship of a line to the box.
+
+        Parameters
+        ----------
+        G : Line
+            The line to check.
+        face : Face, optional
+            Specific face to check against. If None, checks all faces.
+
+        Returns
+        -------
+        list or str
+            If face is None, returns a list of results for each face.
+            If face is specified, returns a single result string.
+        """
         if face is None:
             result = []
             for F in self.faces:
                 result.append(F.position_line(G))
-
             return result
         else:
             return face.position_line(G)
 
     def position_plane(self, E: Plane, face: Face = None):
+        """
+        Determines the positional relationship of a plane to the box.
+
+        Parameters
+        ----------
+        E : Plane
+            The plane to check.
+        face : Face, optional
+            Specific face to check against. If None, checks all faces.
+
+        Returns
+        -------
+        list or str
+            If face is None, returns a list of results for each face.
+            If face is specified, returns a single result string.
+        """
         if face is None:
             result = []
             for F in self.faces:
                 result.append(F.position_plane(E))
-
             return result
-        
         else:
             return face.position_plane(E)
         
     def position_face(self, F2: Face, face: Face = None):
+        """
+        Determines the positional relationship of a face to the box.
+
+        Parameters
+        ----------
+        F2 : Face
+            The face to check.
+        face : Face, optional
+            Specific face to check against. If None, checks all faces.
+
+        Returns
+        -------
+        list or str
+            If face is None, returns a list of results for each face.
+            If face is specified, returns a single result string.
+        """
         if face is None:
             result = []
             for F in self.faces:
                 result.append(F.position_face(F2))
-
             return result
-        
         else:
             return face.position_face(F2)
         
     def position_box(self, W2: "Box"):
         """
-        on_edge
-        on_face
-        on_corner
-        is_contained
-        contains
-        outside
-        identical
-        parallel
-        intersecting
-        """
+        Determines the positional relationship between two boxes.
 
+        Returns
+        -------
+        str
+            One of: "identical", "contains", "is_contained", "intersecting",
+            "on_face", "on_edge", "on_corner", "parallel", or "outside"
+        """
         if self.p_min == W2.p_min and self.p_max == W2.p_max:
             return "identical"
         
@@ -363,26 +403,62 @@ class Box:
     # ======================================================================   
     
     def intersection_line(self, G: Line):
+        """
+        Calculates intersections of a line with the box.
+
+        Parameters
+        ----------
+        G : Line
+            The line to intersect with the box.
+
+        Returns
+        -------
+        list
+            A list of intersection points or lines with each face.
+        """
         result = []
         for F in self.faces:
             S = F.intersection_line(G)
             if S is not None:
                 result.append(S)
-
         return result
 
     def intersection_plane(self, E: Plane):
+        """
+        Calculates intersections of a plane with the box.
+
+        Parameters
+        ----------
+        E : Plane
+            The plane to intersect with the box.
+
+        Returns
+        -------
+        list
+            A list of intersection results with each face.
+        """
         result = []
         for F in self.faces:
             result.append(F.intersection_plane(E))
-
         return result
 
     def intersection_face(self, F2: Face):
+        """
+        Calculates intersections of a face with the box.
+
+        Parameters
+        ----------
+        F2 : Face
+            The face to intersect with the box.
+
+        Returns
+        -------
+        list
+            A list of intersection results with each face.
+        """
         result = []
         for F in self.faces:
             result.append(F.intersection_face(F2))
-
         return result
 
     # ======================================================================
@@ -390,31 +466,79 @@ class Box:
     # ======================================================================
 
     def distance_point(self, Q):
+        """
+        Calculates the minimum distance from a point to the box.
+
+        Parameters
+        ----------
+        Q : array_like
+            The point to measure distance from.
+
+        Returns
+        -------
+        float
+            The minimum distance to the box.
+        """
         D = []
         for F in self.faces:
             D.append(F.distance_point(Q))
-
         return min(D)
     
     def distance_line(self, G: Line):
+        """
+        Calculates the minimum distance from a line to the box.
+
+        Parameters
+        ----------
+        G : Line
+            The line to measure distance from.
+
+        Returns
+        -------
+        float
+            The minimum distance to the box.
+        """
         D = []
         for F in self.faces:
             D.append(F.distance_line(G))
-
         return min(D)
 
     def distance_plane(self, E: Plane):
+        """
+        Calculates the minimum distance from a plane to the box.
+
+        Parameters
+        ----------
+        E : Plane
+            The plane to measure distance from.
+
+        Returns
+        -------
+        float
+            The minimum distance to the box.
+        """
         D = []
         for F in self.faces:
             D.append(F.distance_plane(E))
-
         return min(D)
     
     def distance_face(self, F2):
+        """
+        Calculates the minimum distance from a face to the box.
+
+        Parameters
+        ----------
+        F2 : Face
+            The face to measure distance from.
+
+        Returns
+        -------
+        float
+            The minimum distance to the box.
+        """
         D = []
         for F in self.faces:
             D.append(F.distance_face(F2))
-
         return min(D)
 
     # ======================================================================
@@ -422,21 +546,101 @@ class Box:
     # ======================================================================
 
     def scale(self, factor):
+        """
+        Scales the box by a factor relative to the origin.
+
+        Parameters
+        ----------
+        factor : float
+            The scaling factor.
+
+        Returns
+        -------
+        Box
+            A new scaled box.
+        """
         return Box(self.p_min.scale(factor), self.p_max.scale(factor))
 
     def rotate(self, angle, axis):
+        """
+        Rotates the box around a specified axis.
+
+        Parameters
+        ----------
+        angle : float
+            The rotation angle in degrees.
+        axis : str
+            The rotation axis ('x', 'y', or 'z').
+
+        Returns
+        -------
+        Box
+            A new rotated box.
+        """
         return Box(self.p_min.rotate(angle, axis), self.p_max.rotate(angle, axis))
 
     def translate(self, v):
+        """
+        Translates the box by a vector.
+
+        Parameters
+        ----------
+        v : array_like
+            The translation vector.
+
+        Returns
+        -------
+        Box
+            A new translated box.
+        """
         return Box(self.p_min.translate(v), self.p_max.translate(v))
 
     def reflect_on_point(self, P):
+        """
+        Reflects the box about a point.
+
+        Parameters
+        ----------
+        P : array_like
+            The point of reflection.
+
+        Returns
+        -------
+        Box
+            A new reflected box.
+        """
         return Box(self.p_min.reflect_on_point(P), self.p_max.reflect_on_point(P))
 
     def reflect_on_line(self, g):
+        """
+        Reflects the box about a line.
+
+        Parameters
+        ----------
+        g : Line
+            The line of reflection.
+
+        Returns
+        -------
+        Box
+            A new reflected box.
+        """
         return Box(self.p_min.reflect_on_line(g), self.p_max.reflect_on_line(g))
 
     def reflect_on_plane(self, E):
+        """
+        Reflects the box about a plane.
+
+        Parameters
+        ----------
+        E : Plane
+            The plane of reflection.
+
+        Returns
+        -------
+        Box
+            A new reflected box.
+        """
         return Box(self.p_min.reflect_on_plane(E), self.p_max.reflect_on_plane(E))
     
     # ======================================================================
@@ -444,6 +648,18 @@ class Box:
     # ======================================================================
 
     def draw_on_canvas(self, canvas, camera, **kwargs):
+        """
+        Draws the box on a Tkinter canvas.
+
+        Parameters
+        ----------
+        canvas : tk.Canvas
+            The canvas to draw on.
+        camera : Camera
+            The camera for 3D to 2D projection.
+        **kwargs : dict
+            Styling options passed to each face.
+        """
         faces_with_depth = []
 
         for face in self.faces:
@@ -456,6 +672,18 @@ class Box:
             face.draw_on_canvas(canvas, camera, **kwargs)
 
     def get_depth(self, camera):
-        total = sum(face.get_depth(camera) for face in self.faces)
+        """
+        Calculates the depth of the box with respect to the camera.
 
+        Parameters
+        ----------
+        camera : Camera
+            The camera for depth calculation.
+
+        Returns
+        -------
+        float
+            The average depth of all faces.
+        """
+        total = sum(face.get_depth(camera) for face in self.faces)
         return total / len(self.faces)
