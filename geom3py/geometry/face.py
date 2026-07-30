@@ -829,8 +829,8 @@ class Face:
             for p in self.points:
                 points_2d.extend(camera.project(p))
 
-            fill_color = kwargs.get("fill", "lightgreen")
-            outline_color = kwargs.get("outline", "green")
+            fill_color = kwargs.get("fill", "#A1FFFF")
+            outline_color = kwargs.get("outline", "#52FFFF")
             width = kwargs.get("width", 2)
 
             canvas.create_polygon(

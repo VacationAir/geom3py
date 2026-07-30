@@ -76,3 +76,8 @@ class Point(Vector):
                 outline=color,
                 tags = ("point", )
             )
+
+    def get_depth(self, camera):
+        projected = camera.remapping(self)
+
+        return projected.z

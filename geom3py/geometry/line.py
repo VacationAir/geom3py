@@ -402,7 +402,12 @@ class Line:
                 tags = ("line", )
             )
 
+    def get_depth(self, camera):
+        p1 = camera.remapping(self.support_vector)
+        p2 = camera.remapping(self.point_at(1))
 
+        return (p1.z + p2.z) / 2
+    
     def __repr__(self):
         """
         Returns a readable string representation of the line.

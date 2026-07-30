@@ -6,9 +6,11 @@ class Camera:
         self.offsety = 540
         self.scale = 50
 
-        self.x_rot = 45
+        self.x_rot = -45
         self.y_rot = 45
         self.fov = 90
+
+        self._scene = None
 
     def remapping(self, point3d):
         remapped = Point(point3d.x, point3d.z, point3d.y)
@@ -27,5 +29,12 @@ class Camera:
 
         return px, py
 
-    
+    def set_scene(self, scene):
+        self._scene = scene
+
+    def update(self, dx_rot, dy_rot, d_zoom):
+        self.x_rot += dx_rot
+        self.y_rot += dy_rot
+        self.fov += d_zoom
+        self._scene.render()
 

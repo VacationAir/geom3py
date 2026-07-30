@@ -22,9 +22,9 @@ class Scene:
         self.camera = Camera()
         self.objects = []
 
-    def add(self, obj):
-        self.objects.append(obj)
-        self.render()
+        self._bind_events()
+        self.camera.set_scene(self)
+
 
     def _draw_axes(self, show_ticks=True, tick_spacing=1.0):
         colors = {
@@ -34,9 +34,9 @@ class Scene:
             'tick': '#888888'
         }
 
-        len_x = self.width/(2*self.camera.scale)
-        len_y = self.height/(2*self.camera.scale)
-        len_z = (len_x + len_y) / 2
+        len_x = self.width/(self.camera.scale)
+        len_y = self.height/(self.camera.scale)
+        len_z = (len_x + len_y) 
 
         axes_info = {
             'x': (Vector(1, 0, 0), len_x, 'X', colors['x']),
@@ -112,13 +112,58 @@ class Scene:
                         tags=('axes',)
                     )
 
+    def add(self, obj, **kwargs):
+        self.objects.append((obj, kwargs))
+        self.render()
+
     def render(self):
         self.canvas.delete("all")
         self._draw_axes()
 
-        for obj in self.objects:
-            obj.draw_on_canvas(self.canvas, self.camera)
+        objects_depth = []
+        for obj, kwargs in self.objects:
 
+            try:
+                depth = obj.get_depth(self.camera)
+            except AttributeError:
+                depth = 0
+
+            objects_depth.append((depth, obj, kwargs))
+
+        objects_depth.sort(key=lambda x: x[0], reverse=True)
+
+        for _, obj, kwargs in objects_depth:
+            obj.draw_on_canvas(self.canvas, self.camera, **kwargs)
+
+    def _bind_events(self):  
+        self.canvas.bind('<Up>', self._on_arrow_up)
+        self.canvas.bind('<Down>', self._on_arrow_down)
+        self.canvas.bind('<Left>', self._on_arrow_left)
+        self.canvas.bind('<Right>', self._on_arrow_right)
+
+        self.canvas.bind('<MouseWheel>', self._on_mouse_wheel)
+
+        self.canvas.focus_set()
+
+    def _on_arrow_down(self, event):
+        self.camera.update(dx_rot=5, dy_rot=0, d_zoom=0)
+
+    def _on_arrow_up(self, event):
+        self.camera.update(dx_rot=-5, dy_rot=0, d_zoom=0)
+
+    def _on_arrow_right(self, event):
+        self.camera.update(dx_rot=0, dy_rot=5, d_zoom=0)
+
+    def _on_arrow_left(self, event):
+        self.camera.update(dx_rot=0, dy_rot=-5, d_zoom=0)
+
+    def _on_mouse_wheel(self, event):
+        if event.delta > 0:
+            self.camera.update(0, 0, 45)
+        else:
+            self.camera.update(0, 0, -45)
+                
+        self.render()
 
     def show(self):
         self.root.mainloop()
