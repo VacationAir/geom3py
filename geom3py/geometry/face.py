@@ -819,7 +819,28 @@ class Face:
             self.X3.reflect_on_plane(E),
             self.X4.reflect_on_plane(E)            
         )
-    
+
+    # ======================================================================
+    # Visualization
+    # ======================================================================
+
+    def draw_on_canvas(self, canvas, camera, **kwargs):
+            points_2d = []
+            for p in self.points:
+                points_2d.extend(camera.project(p))
+
+            fill_color = kwargs.get("fill", "lightgreen")
+            outline_color = kwargs.get("outline", "green")
+            width = kwargs.get("width", 2)
+
+            canvas.create_polygon(
+                points_2d,
+                fill=fill_color,
+                outline = outline_color,
+                width=width,
+                tags = ("face", )
+            )
+
     def __repr__(self):
         """
         Returns a readable string representation of the face.

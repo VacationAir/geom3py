@@ -59,3 +59,20 @@ class Point(Vector):
             The connecting vector (other_point - self) as a Vector object.
         """
         return p2 - self
+
+    # ======================================================================
+    # Visualization
+    # ======================================================================
+
+    def draw_on_canvas(self, canvas, camera, **kwargs):
+            x, y = camera.project(self)
+            radius = kwargs.get("radius", 4)
+            color = kwargs.get("color", "red")
+
+            canvas.create_oval(
+                x- radius, y - radius,
+                x + radius, y + radius,
+                fill=color,
+                outline=color,
+                tags = ("point", )
+            )

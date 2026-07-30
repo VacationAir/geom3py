@@ -452,6 +452,7 @@ class Plane:
     def reflect_on_plane(self, E):
         return Plane(self.point.reflect_on_plane(E), self.normal_vector.reflect_on_plane(E))
 
+
     def __repr__(self):
         """
         Returns a readable string representation of the plane.

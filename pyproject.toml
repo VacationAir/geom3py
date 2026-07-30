@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geom3py"
+version = "1.0.0"
+description = "Pure Python library for 3D analytical geometry with vectors, points, lines, planes, faces and geometric transformations."
+readme = "README.md"
+requires-python = ">=3.10"
+
+authors = [
+    { name = "VacationAir", email = "vacationair.va@gmail.com" }
+]
+
+license = { text = "MIT" }
+
+keywords = [
+    "geometry",
+    "analytical geometry",
+    "3D",
+    "mathematics",
+    "vector",
+    "linear algebra",
+    "point",
+    "line",
+    "plane",
+    "face",
+    "transformation",
+    "rotation",
+    "reflection",
+    "translation",
+    "scaling",
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+
+    "Operating System :: OS Independent",
+
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+
+    "Topic :: Education",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/VacationAir/geom3py"
+Documentation = "https://github.com/VacationAir/geom3py#readme"
+Repository = "https://github.com/VacationAir/geom3py"
+Issues = "https://github.com/VacationAir/geom3py/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["geom3py*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = ["tests"]

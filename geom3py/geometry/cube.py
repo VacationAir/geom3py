@@ -271,3 +271,11 @@ class Cube:
 
     def reflect_on_plane(self, E):
         return Cube(self.p_min.reflect_on_plane(E), self.p_max.reflect_on_plane(E))
+
+    # ======================================================================
+    # Visualization
+    # ======================================================================
+
+    def draw_on_canvas(self, canvas, camera, **kwargs):
+        for F in self.faces:
+            F.draw_on_canvas(canvas, camera, **kwargs)

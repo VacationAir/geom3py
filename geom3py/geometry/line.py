@@ -380,7 +380,29 @@ class Line:
 
     def reflect_on_plane(self, E):
         return Line(self.support_vector.reflect_on_plane(E), self.direction_vector.reflect_on_plane(E))
-    
+
+    # ======================================================================
+    # Visualization
+    # ======================================================================
+
+    def draw_on_canvas(self, canvas, camera, **kwargs):
+            p1 = self.support_vector
+            p2 = self.point_at(1)
+
+            x1, y1 = camera.project(p1)
+            x2, y2 = camera.project(p2)
+
+            color = kwargs.get("color", "blue")
+            width = kwargs.get("width", 2)
+
+            canvas.create_line(
+                x1, y1, x2, y2,
+                fill=color,
+                width=width,
+                tags = ("line", )
+            )
+
+
     def __repr__(self):
         """
         Returns a readable string representation of the line.
