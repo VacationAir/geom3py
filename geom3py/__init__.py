@@ -5,7 +5,7 @@ from .geometry.plane import Plane
 from .geometry.face import Face
 from .geometry.box import Box
 from .geometry.polygon import Polygon
-
+from .geometry.obj_loader import load_obj
 
 __all__ = [
     "Point",
@@ -14,7 +14,8 @@ __all__ = [
     "Face",
     "Box",
     "Vector",
-    "Polygon"
+    "Polygon",
+    "load_obj"
 ]
 
-__version__ = "1.0.0"
+__version__ = "2.5.0"

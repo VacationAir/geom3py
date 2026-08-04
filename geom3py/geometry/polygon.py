@@ -3,6 +3,8 @@ from .vector import Vector
 from .line import Line
 from .plane import Plane
 from ..utils.linal_utils import close
+from .triangulation import triangulate
+
 
 class Polygon:
     """
@@ -31,14 +33,17 @@ class Polygon:
         Axis-aligned bounding box with 'min' and 'max' points.
     is_coplanar : bool
         Whether all vertices lie in the same plane.
-    normal_vector : Vector or None
-        Normal vector if coplanar, None otherwise.
+    normal_vector : Vector
+        Normal vector computed using Newell's method (works for coplanar
+        and non-coplanar polygons).
     area : float or None
         Area if coplanar, None otherwise.
     is_convex : bool or None
         Whether the polygon is convex if coplanar, None otherwise.
     is_clockwise : bool or None
         Whether vertices are clockwise if coplanar, None otherwise.
+    triangles : list of Triangle or None
+        Triangulation of the polygon if coplanar, None otherwise.
     """
     
     def __init__(self, vertices):
@@ -69,18 +74,19 @@ class Polygon:
         self.perimeter = self._compute_perimeter()
         self.bounding_box = self._compute_bounding_box()
         self.is_coplanar = self._check_coplanarity()
+        self.normal_vector = self._compute_newell_normal()
 
         # Extended properties
         if self.is_coplanar:
-            self.normal_vector = self._compute_normal()
             self.area = self._compute_area()
             self.is_convex = self._compute_convexity()
             self.is_clockwise = self._compute_orientation()
         else:
-            self.normal_vector = None
             self.area = None
             self.is_convex = None
             self.is_clockwise = None
+
+        self.triangles = self._compute_triangulation()
 
     # ======================================================================
     # Private compute methods
@@ -174,21 +180,40 @@ class Polygon:
         
         return True
 
-    def _compute_normal(self):
+    def _compute_triangulation(self):
         """
-        Computes the normal vector of the polygon.
+        Computes the triangulation of the polygon.
+
+        Returns
+        -------
+        list of Triangle or None
+            List of triangles if coplanar, None otherwise.
+        """
+        return triangulate(self)
+
+    def _compute_newell_normal(self):
+        """
+        Computes the normal vector using Newell's method.
+
+        Newell's method works for both coplanar and non-coplanar polygons,
+        making it more robust than the cross product method for arbitrary
+        polygons.
 
         Returns
         -------
         Vector
             The normalized normal vector.
         """
-        v0 = self.vertices[0]
-        v1 = self.vertices[1]
-        v2 = self.vertices[2]
-        
-        normal = (v1 - v0).cross(v2 - v0)
-        return normal.normalize()
+        nx = ny = nz = 0.0
+        n = len(self.vertices)
+        for i in range(n):
+            v1 = self.vertices[i]
+            v2 = self.vertices[(i + 1) % n]
+            nx += (v1.y - v2.y) * (v1.z + v2.z)
+            ny += (v1.z - v2.z) * (v1.x + v2.x)
+            nz += (v1.x - v2.x) * (v1.y + v2.y)
+
+        return Vector(nx, ny, nz).normalize()
     
     def _compute_area(self):
         """

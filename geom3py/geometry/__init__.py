@@ -5,3 +5,4 @@ from .plane import Plane
 from .face import Face
 from .box import Box
 from .polygon import Polygon
+from .obj_loader import load_obj

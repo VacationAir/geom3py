@@ -1,4 +1,5 @@
 from .vector import Vector
+from ..utils.linal_utils import close
 
 class Point(Vector):
     """
@@ -21,7 +22,9 @@ class Point(Vector):
     different geometric meaning. While a vector describes a direction or
     displacement, a point represents a fixed position in space.
     """
-
+    def __eq__(self, p2):
+        return self.equals(p2)
+    
     def distance_point(self, p2):
         """
         Calculate the Euclidean distance to another point.
@@ -60,6 +63,19 @@ class Point(Vector):
         """
         return p2 - self
 
+    def equals(self, p2):
+        """
+        Calculates wether two points are equal or not
+        -------
+        Returns
+            boolean: wether they are equal or not
+        """
+        if close(self.distance_point(p2), 0):
+            return True
+
+        else:
+            return False
+        
     # ======================================================================
     # Visualization
     # ======================================================================
