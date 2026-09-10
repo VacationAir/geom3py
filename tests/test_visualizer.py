@@ -64,7 +64,7 @@ scene2.add(g5)
 
 for poly in polygons:
     for i in range(len(poly.triangles)):
-        line = Line(p3, poly.triangles[i].plane.foot_point(p3))
+        line = Line(p3, poly.triangles[i].foot_point(p3))
         scene3.add(line)
 
     scene3.add(poly)

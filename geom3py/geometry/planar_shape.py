@@ -216,6 +216,9 @@ class PlanarShape(ABC):
 
         return False
 
+    def foot_point(self, P):
+        return self.plane.foot_point(P)
+    
     # ======================================================================
     # Positional Relationships
     # ======================================================================
