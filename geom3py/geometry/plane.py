@@ -128,8 +128,7 @@ class Plane:
         bool
             True if the point lies in the plane, otherwise False.
         """
-        if close(p1.dot(self.normal_vector), 
-                     self.point.dot(self.normal_vector)):
+        if close(p1.dot(self.normal_vector), self.point.dot(self.normal_vector)):
             return True
         else:
             return False
