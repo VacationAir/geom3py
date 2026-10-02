@@ -1,9 +1,8 @@
 from geom3py import Point, Box, Face, Line, Polygon, load_obj
 from geom3py.visualization import Scene
 import math
-import time
 
-polygons = load_obj(r"C:\Users\Alex\Documents\GitHub\geom3py\assets\test.obj")
+polygons = load_obj("assets/test.obj")
 
 ###################################################
 
