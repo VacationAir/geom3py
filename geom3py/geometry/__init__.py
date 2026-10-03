@@ -4,5 +4,6 @@ from .line import Line
 from .plane import Plane
 from .face import Face
 from .box import Box
+from .sphere import Sphere
 from .polygon import Polygon
 from .obj_loader import load_obj
