@@ -132,4 +132,86 @@ class Sphere:
             P2 = L -g.direction_vector.normalize() * h
 
             return [P1, P2]
+
+    def intersection_plane(self, E: Plane):
+        position = self.position_plane(E)
+
+        if position == "outside":
+            return None
+
+        elif position == "touching": # Distance (magnitude) must be radius
+            lamda = -(E.normal_vector[0] * self.radius[0] + E.normal_vector[1] * self.radius[1] + E.normal_vector[2] * self.radius[2] - E.normal_vector.dot(E.point) / (E.normal_vector[0]**2 + E.normal_vector[1]**2 + E.normal_vector[2]**2))
+            return Point(E.normal_vector*lamda)
+
+        elif position == "intersecting":
+            M = self.center + E.distance_point(self.center)
+            radius = math.sqrt(self.radius**2 - M.magnitude()**2)
+
+            return M, radius
+
+    def intersection_sphere(self, S2):
+        position = self.position_sphere(S2)
+
+        if position == "outside":
+            return None
+
+        elif position == "identical":
+            return 0
+
+        elif position == "concentric": 
+            space = self.radius - S2.radius
+            return space
+        
+        elif position == "touching":
+            g = Line(self.center, (S2.center-self.center).normalize())
+            P = g.point_at(self.radius)
+
+    # ======================================================================
+    # Distance Calculations
+    # ======================================================================
+
+    def distance_point(self, Q, center=False):
+        if not center:
+            return Q.distance_point(self.center) - self.radius
+        
+        elif center:
+            return Q.distance_point(self.center)
+
+    def distance_line(self, g, center=False):
+        position = self.position_line(g)
+
+        if not center:
+            L = g.distance_point(self.center)
+
+            return L - self.radius
+
+        if center:
+            if position == "intersecting":
+                return None
+
+            elif position == "touching":
+                return 0
+
+            elif position == "outside":
+                L = g.distance_point(self.center)
+
+                return L
+            
+    def distance_plane(self, E, center=False):
+        L = E.distance_point(self.center)
+
+        if not center:
+            return L - self.radius
+
+        elif center:
+            return L
+
+    def distance_box(self, B, center=False):
+        L = B.distance_point(self.center)
+
+        if not center:
+            return L - self.center
+
+        elif center:
+            return L
         
