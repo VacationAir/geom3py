@@ -217,7 +217,7 @@ class Box:
         Point
             The center point.
         """
-        return Point((self.p_max - self.p_min) * 0.5)
+        return Point((self.p_max + self.p_min) * 0.5)
     
     def point_on_edge(self, Q):
         """
